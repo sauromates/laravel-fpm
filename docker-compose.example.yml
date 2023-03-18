@@ -1,0 +1,67 @@
+version: '3'
+
+services:
+
+  php:
+    image: sauromates/laravel-fpm
+    restart: unless-stopped
+    volumes:
+      - ${PWD}:/var/www/html
+    depends_on:
+      - mysql
+      - redis
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - './Caddyfile:/etc/caddy/Caddyfile'
+      - ${PWD}:/var/www/html:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - php
+    environment:
+      SERVER_NAME: ${SERVER_NAME:-localhost, localhost:80, caddy:80}
+
+  mysql:
+    image: 'mysql/mysql-server:8.0'
+    restart: unless-stopped
+    ports:
+      - '${FORWARD_DB_PORT:-3306}:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    volumes:
+      - 'app-mysql:/var/lib/mysql'
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
+      interval: 60s
+      retries: 3
+      timeout: 5s
+
+  redis:
+    image: 'redis:alpine'
+    restart: unless-stopped
+    ports:
+      - '${FORWARD_REDIS_PORT:-6379}:6379'
+    volumes:
+      - 'app-redis:/data'
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 60s
+      retries: 3
+      timeout: 5s
+
+volumes:
+  app-mysql:
+  app-redis:
+  caddy-data:
+  caddy-config:
