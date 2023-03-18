@@ -72,4 +72,5 @@ STOPSIGNAL SIGQUIT
 EXPOSE 9000
 
 ENTRYPOINT ["laravel-entrypoint"]
-CMD ["/usr/sbin/php-fpm$PHP_VERSION", "-F", "-R"]
+ENV FPM_EXECUTABLE=/usr/sbin/php-fpm${PHP_VERSION}
+CMD ${FPM_EXECUTABLE} -F -R
