@@ -60,10 +60,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN setcap "cap_net_bind_service=+ep" /usr/bin/php$PHP_VERSION
 
-# COPY . /var/www/html/
-COPY docker/laravel-entrypoint.sh /usr/local/bin/laravel-entrypoint
-COPY docker/zz-docker.conf /etc/php/$PHP_VERSION/fpm/pool.d/zz-docker.conf
-COPY docker/supervisord.conf /etc/supervisord.conf
+COPY laravel-entrypoint.sh /usr/local/bin/laravel-entrypoint
+COPY zz-docker.conf /etc/php/$PHP_VERSION/fpm/pool.d/zz-docker.conf
+COPY supervisord.conf /etc/supervisord.conf
 
 RUN chmod +x /usr/local/bin/laravel-entrypoint
 
