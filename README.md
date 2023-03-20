@@ -48,7 +48,7 @@ The deploy is quite simple once you have configured a web server container. In m
 
 Only 2 things are needed to deploy production-ready containerized Laravel app with Caddy: `public` folder binding and Caddyfile. Example of Caddy container configuration can be found in [`docker-compose` file](https://github.com/sauromates/laravel-fpm/blob/main/docker-compose.example.yml) under the `caddy` service. Example of Caddyfile is provided below.
 
-```json
+```
 {$SERVER_NAME}
 
 log
