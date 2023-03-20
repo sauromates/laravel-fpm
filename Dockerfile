@@ -12,11 +12,11 @@ ENV TZ=UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN apt-get update && \
-    apt-get install -y gnupg gosu curl ca-certificates zip unzip git supervisor sqlite3 libcap2-bin libpng-dev python2 dnsutils && \
+    apt-get install -y --no-install-recommends gnupg curl ca-certificates zip unzip git supervisor sqlite3 libcap2-bin libpng-dev python2 dnsutils && \
     curl -sS 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x14aa40ec0831756756d7f66c4f4ea0aae5267a6c' | gpg --dearmor | tee /usr/share/keyrings/ppa_ondrej_php.gpg > /dev/null && \
     echo "deb [signed-by=/usr/share/keyrings/ppa_ondrej_php.gpg] https://ppa.launchpadcontent.net/ondrej/php/ubuntu jammy main" > /etc/apt/sources.list.d/ppa_ondrej_php.list && \
     apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
         php$PHP_VERSION-fpm \
         php$PHP_VERSION-dev \
         php$PHP_VERSION-pgsql \
@@ -41,7 +41,7 @@ RUN apt-get update && \
         php$PHP_VERSION-pcov \
         php$PHP_VERSION-xdebug && \
     curl -sLS https://deb.nodesource.com/setup_$NODE_VERSION.x | bash - && \
-    apt-get install -y nodejs && \
+    apt-get install -y --no-install-recommends nodejs && \
     npm install -g npm && \
     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | tee /usr/share/keyrings/yarn.gpg >/dev/null && \
     echo "deb [signed-by=/usr/share/keyrings/yarn.gpg] https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list && \
@@ -60,9 +60,10 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 RUN setcap "cap_net_bind_service=+ep" /usr/bin/php$PHP_VERSION
 
-COPY laravel-entrypoint.sh /usr/local/bin/laravel-entrypoint
 COPY zz-docker.conf /etc/php/$PHP_VERSION/fpm/pool.d/zz-docker.conf
 COPY supervisord.conf /etc/supervisord.conf
+
+COPY laravel-entrypoint.sh /usr/local/bin/laravel-entrypoint
 
 RUN chmod +x /usr/local/bin/laravel-entrypoint
 
@@ -71,5 +72,6 @@ STOPSIGNAL SIGQUIT
 EXPOSE 9000
 
 ENTRYPOINT ["laravel-entrypoint"]
+
 ENV FPM_EXECUTABLE=/usr/sbin/php-fpm${PHP_VERSION}
 CMD ${FPM_EXECUTABLE} -F -R
